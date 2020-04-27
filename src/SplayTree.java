@@ -1,161 +1,244 @@
-public class SplayTree <E> implements Tree{
+/*
+*
+*Referencias: Duane A. Bailey. (2007). Java Structures. 7ma edicion.
+*
+*@author Juan Pablo pineda 19087
+*@author Eduardo Ramírez 19946
+*/
 
-	public Node root;
-	private final int count = 0;
-	
-	@Override
-	public boolean contains(String key){
-		return get(key) != null; 
-	/**
-	revisa si el arbol contiene una llave especifica
-	@param key palabra clase
-	@return boolean
-	**/
-	}
+public class SplayTree<E extends Comparable<E>> {
 
-	@Override
-	public String get(String key){
-		root = splay(root, key);
-		int comparar = key.compareTo(root.getKey());
-		if(comparar == 0 ){
-			return root.getValue().getValue().toString();
-		}
-		else{
-			return null;
-		}
-		/**
-		@param key
-		@return el valor asociado con la clave dada, sino hay valor retorna null
-		**/
-	}
+    private E val;
+    private SplayTree<E> parent;
+    private SplayTree<E> left, right; 
 
-	@Override
-	public void put(String key, String value){
-		//Splay key to root
-		if (root == null){
-			root = new Node(key, value);
-			return;
-		}
-		root = splay(root, key);
-		int comparar = key.compareTo(root.getKey());
+    /**
+     * Constructor sin parametros
+     */
+    public SplayTree(){
+        val = null;
+        parent = null; 
+        left = right = null;
+    }
 
-		//Insetar un nuevo nodo a la raiz 
-		if (comparar < 0){
-			Node n = new Node(key, value);
-			n.setLeft(root.getLeft());
-			n.setRight(root);
-			root.setLeft(null);
-			root = n;
-		}
-		if (comparar > 0){
-			Node n = new Node(key, value);
-			n.setRight(root.getRight());
-			n.setLeft(root);
-			root.setRight(null);
-			root = n;
-		}
-	}
+    /**
+     * Constructor que inicializa un BST
+     * @param val
+     */
+    public SplayTree(E value){
+        val = value;
+        right = left = new SplayTree<E>();
+        setLeft(left);
+        setRight(right);
+    }
 
-	//Elimminar
-	public void remove(String key){
-		if(root == null){
-			return;
-		}
-		root = splay(root, key);
-		int comparar = key.compareTo(root.getKey());
-		if (comparar == 0){
-			if (root.getLeft() == null){
-				root = root.getRight();
-			}else{
-				Node x = root.getRight();
-				root = root.getLeft();
-				splay(root, key);
-				root.setRight(x);
-			}
-		}
-	}
+    /**
+     * Elimina todos los elementos del BST
+     */
+    public void clear(){}
 
-	private Node splay(Node h, String key) {
-        if (h == null) return null;
+    /**
+     * @return numero de elementos en el BST
+     */
+    public int size(){
+        return 0;
+    }
 
-        int cmp1 = key.compareTo(h.getKey());
+    /**
+     * Agrega elementos de manera ordenada al BST
+     * @param value
+     */
+    public void add(E newValue, SplayTree<E> tree){  
+        int comp = tree.getValue().compareTo(newValue);
 
-        if (cmp1 < 0) {
-            // La clave no esta en el arbol
-            if (h.getLeft() == null) {
-                return h;
-            }
-            int cmp2 = key.compareTo(h.getLeft().getKey());
-            if (cmp2 < 0) {
-                h.getLeft().setLeft(splay(h.getLeft().getLeft(), key));
-                h = rotateRight(h);
-            }
-            else if (cmp2 > 0) {
-                h.getLeft().setRight(splay(h.getLeft().getRight(), key));
-                if (h.getLeft().getRight() != null)
-                    h.setLeft(rotateLeft(h.getLeft()));
-            }
-            
-            if (h.getLeft() == null) return h;
-            else                return rotateRight(h);
+        if(comp>0 && tree.getLeft()==null){
+            tree.setLeft(new SplayTree<E>());
+            tree.getLeft().setValue(newValue);
+            balancear(tree.getLeft());
+        }else if(comp>0 && tree.getLeft()!=null){
+            add(newValue, tree.getLeft());
+
+        }if(comp<=0 && tree.getRight()==null){
+            tree.setRight(new SplayTree<E>());
+            tree.getRight().setValue(newValue);
+            balancear(tree.getRight());
+        }else if(comp<=0 && tree.getRight()!=null){
+            add(newValue, tree.getRight());
         }
+    }
 
-        else if (cmp1 > 0) { 
-            // La llave no esta en el arbol
-            if (h.getRight() == null) {
-                return h;
-            }
-
-            int cmp2 = key.compareTo(h.getRight().getKey());
-            if (cmp2 < 0) {
-                h.getRight().setLeft(splay(h.getRight().getLeft(), key));
-                if (h.getRight().getLeft() != null)
-                    h.setRight(rotateRight(h.getRight()));
-            }
-            else if (cmp2 > 0) {
-                h.getRight().setRight(splay(h.getRight().getRight(), key));
-                h = rotateLeft(h);
-            }
-            
-            if (h.getRight() == null) return h;
-            else                 return rotateLeft(h);
+    /**
+     * @param value
+     * @return true si value se encuentra en el BST
+     */
+    public boolean contains(SplayTree<E> node, E value){
+        if (node.getValue().compareTo(value)==0) {
+            return true;
         }
-
-        else return h;
-    }
-
-    public int height() { 
-    	return height(root);
-    }
-
-    private int height(Node x) {
-        if (x == null){
-        	return -1;
+        boolean contains = false;
+        if (node.getLeft() != null) {
+            contains = contains(node.getLeft(), value);
         }
-        return 1 + Math.max(height(x.getLeft()), height(x.getRight()));
+        if (!contains && node.getRight() != null) {
+            contains = contains(node.getRight(), value);
+        }
+    
+        return contains;
     }
 
-    public int size() {
-        return size(root);
+    /**
+     * @param value valor a buscar dentro del BST
+     * @return valor del BST
+     */
+    public E get(SplayTree<E> node, E value){
+        if (node.getValue().compareTo(value)==0) {
+            return node.getValue();
+        }
+        E contains = null;
+        if (node.getLeft() != null) {
+            contains = get(node.getLeft(), value);
+        }
+        if (contains == null && node.getRight() != null) {
+            contains = get(node.getRight(), value);
+        }
+    
+        return contains;
     }
 
-    private int size(Node x) {
-        if (x == null) return 0;
-        else return 1 + size(x.getLeft()) + size(x.getRight());
+    /**
+     * @param value valor que se quiere eliminar
+     * @return el valor que recien se elimino
+     */
+    public E remove(E value){
+        return value;
     }
 
-    private Node rotateRight(Node h) {
-        Node x = h.getLeft();
-        h.setLeft(x.getRight());
-        x.setRight(h);
-        return x;
+        /**
+     * Asigna un objeto hijo a la izquierda
+     * @param newLeft
+     */
+    public void setLeft(SplayTree<E> newLeft){
+        if (isEmpty()) return;
+        if (left != null && left.getParent() == this) left.setParent(null);
+        left = newLeft;
+        left.setParent(this);
+    }
+
+    public boolean isEmpty() {
+        return this.getValue() == null;
+    }
+
+    /**
+     * Asigna un objeto hijo a la derecha
+     * 
+     * @param newRight
+     */
+    public void setRight(SplayTree<E> newRight){
+        if (isEmpty()) return;
+        if (right != null && right.getParent() == this) right.setParent(null);
+        right = newRight;
+        right.setParent(this);
+    }
+
+    /**
+     * Asigna un objeto de asociado de mayor jerarquia
+     * @param newParent
+     */
+    protected void setParent(SplayTree<E> newParent){
+        if (!isEmpty()){
+            parent = newParent;
+        }
     }
     
-    private Node rotateLeft(Node h) {
-        Node x = h.getRight();
-        h.setRight(x.getLeft());
-        x.setLeft(h);
-        return x;
+    /**
+     * @return the left
+     */
+    public SplayTree<E> getLeft() {
+        return left;
     }
 
+    /**
+     * @return the right
+     */
+    public SplayTree<E> getRight() {
+        return right;
+    }
+
+    /**
+     * @return the parent
+     */
+    public SplayTree<E> getParent() {
+        return parent;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public E getValue(){
+        return val;
+    }
+
+    /**
+     * 
+     * @param value
+     */
+    public void setValue(E value){
+        val = value;
+    }
+
+    /**
+     * Metodo para balancear el arbol con algortimo splay tree
+     * @param tree arbol que se movera a la raiz
+     */
+    private void balancear(SplayTree<E> tree){
+        //Repetir los movimientos hasta llegar a la raiz
+        while(tree.parent != null){
+            //Si el arbol esta a la izquierda del padre hacer zig
+            if(tree.getValue().compareTo(tree.getParent().getValue()) < 0){
+                zig(tree);
+            //Si esta a la derecha del padre hacer zag
+            }else{
+                zag(tree);
+            }
+        }
+    }
+
+    /**
+     * Rotacion del arbol zig
+     * @param tree Arbol que se va a rotar
+     */
+    private void zig(SplayTree<E> tree){
+        tree.getRight().setParent(tree.getParent());
+        tree.getParent().setLeft(tree.getRight());
+
+        tree.setRight(tree.getParent());
+        tree.setParent(tree.getRight().getParent());
+        tree.getRight().setParent(tree);
+    }
+
+    /**
+     * Rotacion del arbol zag
+     * @param tree Arbol que se va a rotar
+     */
+    private void zag(SplayTree<E> tree){
+        tree.getLeft().setParent(tree.getParent());
+        tree.getParent().setRight(tree.getLeft());
+
+        tree.setLeft(tree.getParent());
+        tree.setParent(tree.getLeft().getParent());
+        tree.getLeft().setParent(tree);
+    }
+
+    public void inOrder(SplayTree<E> node) {
+        if (node.getLeft() != null) {
+            inOrder(node.getLeft());
+        }else{
+            System.out.println(node.getValue().toString());
+            if (node.getRight() != null) {
+                inOrder(node.getRight());
+            }
+        }
+    }
+    
 }
