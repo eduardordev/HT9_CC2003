@@ -1,156 +1,55 @@
 /*
-* Universidad del Valle de Guatemala
-* Algortimos y estructura de datos
-* Hoja de Trabajo #9 
-* @author Juan Pablo Pineda 19087
-* @author Eduardo Ramírez Herrera
-* @since  23/04/2020
-* @version 26/04/2020
+*
+*@author Juan Pablo pineda 19087
+*@author Eduardo Ramírez 19946
 */
-import java.io.*;
-import java.util.*; 
 
-public class Main {
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
-     public static void main(String [] args) throws FileNotFoundException, IOException {
+public class Main{
+	public static void main(String[] args) {
 
-     	BufferedReader br = new BufferedReader(new FileReader("Spanish.txt"));   
+		Factory<String,String> factory = new Factory<>();
+		TranslatorInterface<String,String> dictionary = null;
 
-        StringBuilder sb = new StringBuilder();
-        
-        String line;
-        
-        Tree imp = null; //implementacion que escogera el Factory
-        
-        Factory factory = new Factory();
+		//Solicitar al usuario la implementacion hasta que la seleccione correctamente
+		while(dictionary == null){
+			String implementacion = JOptionPane.showInputDialog(null, "Ingrese '1' para implementar un HASHING \nIngrese '2' para implementar SPLAY TREE");
+			if(implementacion.equals("1")){
+				dictionary = factory.getTranslator(1); //Usar implmentacion de hashing
+			}else if(implementacion.equals("2")){
+				dictionary = factory.getTranslator(2); //Usar implementacion de SplayTree
+			}else{
+				JOptionPane.showMessageDialog(null, "Por favor ingrese una opcion valida >:(");
+			}
+		}
 
-        SplayTree<Node<Association<String, String>>> rbt = new SplayTree<>(); //se crea nuevo arbol null
+		//Manejar visualizador de archivos
+		JFileChooser jfc = new JFileChooser();
+		jfc.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
-        Scanner teclado = new Scanner(System.in);
+		//Solicitar archivo de traducciones
+		JOptionPane.showMessageDialog(null, "A continuacion ingerse un archivo con traducciones");
+		jfc.showOpenDialog(null); 
+		File file = jfc.getSelectedFile();
 
-        int ciclo =0;
+		//Solicitar archivo con frase a traducir
+		JOptionPane.showMessageDialog(null, "A continuacion ingerse un archivo con la frase a traducir");
+		jfc.showOpenDialog(null); 
+		File file2 = jfc.getSelectedFile();
 
-        try{
+		//Realizar traduccion
+		Translator translator = new Translator(file,file2,dictionary);
+		translator.agregarDiccionario();
+		String oracion = translator.getOracion();
+		String traduccion = translator.traducir();
 
-            while (ciclo ==0)
-            {
-
-                System.out.println("\n Implementacion a utilizar: \n\t1. HashMap \n\t2. Splay Tree \n\t3. Salir");
-                String entryTree = teclado.nextLine();
-                switch(entryTree)
-
-                {
-                    case "1":
-                        imp = factory.getTree("HashMap");
-
-                        break;
-
-                    case "2":
-                        imp = factory.getTree("Splay Tree");
-
-                        break;
-
-                    case "3":
-                        ciclo = 1;
-
-                        break;
-                }
-                if(ciclo == 0){
-
-                    while ((line=br.readLine())!=null) {
-
-                        String palabraIngles;
-                        String palabraEspanol;
-
-                        sb.append(line);
-
-                        sb.append(System.lineSeparator()); 
-
-                        line = line + " "; //Concatenado para que el ultimo valor sea leido sin problemas
-                                           //por substring
-                        for(int i=1;i<line.length();i++){
-
-                            String iter = line.substring((i-1), i); 
-
-                            if(iter.equals("\t"))
-                            {
-                                
-                                if(line.contains(",")){
-
-                                    palabraEspanol = line.substring(i, line.indexOf(",")).toLowerCase();
-
-                                }else if(line.contains(";")){
-
-                                    palabraEspanol = line.substring(i, line.indexOf(";")).toLowerCase();
-
-                                }else{
-
-                                    palabraEspanol = line.substring(i, line.length()-1).toLowerCase(); //se obtiene la subcadena luego de ","
-
-                                }
-                                
-                                palabraIngles = line.substring(0, i-1).toLowerCase(); //se obtiene la subcadena antes de ","
-
-                                imp.put(palabraIngles, palabraEspanol);
-                            }
-                        }
-                    }
-                     //Traduccion del documento.
-
-                    File archivo = new File ("texto.txt");
-
-                    FileReader fr = new FileReader (archivo);
-
-                    BufferedReader br1 = new BufferedReader(fr);
-
-                    String linea = "";
-
-                    Scanner scanner = new Scanner(fr);
-
-                    String palabra = "";
-
-                    while (scanner.hasNextLine()) {
-
-                        linea += scanner.nextLine();
-                        
-                        palabra = linea.replaceAll("\n", " ");
-
-                    }
-
-                    fr.close();
-
-                    br1.close();
-
-                    String palabras[] = palabra.split(" ");
-
-
-                    String resultado = "";
-
-                    String word;
-
-                    for(String p: palabras){
-
-                        word = p.toLowerCase();
-
-                        if (imp.contains(word))
-                            resultado += imp.get(word).toUpperCase() + " ";
-
-                        else
-                            resultado+= " *"+word.toUpperCase() + "* ";
-
-                        }
-
-                    System.out.println("----------------------------------");
-                    System.out.println("Traduccion:");
-                    System.out.println(resultado);
-                    System.out.println("----------------------------------");
-                    ciclo = 1;
-                }
-            }
-        } finally{
-
-            br.close();
-
-        }
-    }
+		//Mostrar resultados
+		System.out.println(oracion+"\n"+traduccion);
+		JOptionPane.showMessageDialog(null, oracion+"\nSe traduce como: \n"+traduccion);
+	}
 }
+
+

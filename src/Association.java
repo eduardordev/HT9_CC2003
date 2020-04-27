@@ -1,83 +1,58 @@
-import java.util.Map;
+/*
+*
+*@author Juan Pablo pineda 19087
+*@author Eduardo Ramírez 19946
+*
+*Codigo adaptado de: Java Structures: Data Structures pagina 16 y pagina 257
+*/
 
-public class Association<K, V> implements Map.Entry<K,V>{
-	protected K theKey; // La clave del par key-value 
-	protected V theValue; // La clave del par key-value 
+public class Association<K extends Comparable<K>, V> implements Comparable<Association<K,V>>{
+    private K key;
+    private V value;
 
-	public Association(K key, V value){
-        /**
-        la clave previa no es nula
-      	post construye un par clave-valor
-        @param key Un objeto no nulo.
-        @param value A (posiblemente nulo) objeto.
-        **/
-        theKey = key;
-        theValue = value;
+    /**
+    @param key          Llave
+    @param value        Valor
+    Post: Se construye la asosiaccion
+    */
+    public Association(K key, V value){
+        this.key = key;
+        this.value = value;
     }
 
-    public Association(K key){
-    	/**
-    	Construye un par a partir de una clave; El valor es nulo.
-        pre clave no es nula
-        post construye un par clave-valor; el valor es nulo
-        @param key Un valor de clave no nulo.
-        **/
-        this(key,null);
-    }
+    public Association(){}
 
-    @Override
-    public boolean equals(Object other){
-    	/**
-    	Función de comparación estándar. Comparación basada solo en claves.
-	    pre other es una asociación no nula
-	    post devuelve verdadero si las claves son iguales
-	    @param otro Otra asociación.
-	    @return true si las claves son iguales.
-        **/
-        Association otherAssoc = (Association)other;
-        return getKey().equals(otherAssoc.getKey());
-    }
-
-    @Override
-    public int hashCode(){
-    	/**
-    	Función estándar de código hash.
-        post devuelve asociación de código hash con esta asociación
-	    @return Un código hash para la asociación.
-      	ver Hashtable
-        **/
-        return getKey().hashCode();
-    }
-
-    @Override
-    public V getValue(){
-    	/**
-    	Obtener valor de la asociación. Puede volver nulo.
-	    publicar devuelve valor de asociación
-	    @return El campo de valor de la asociación.
-        **/
-        return theValue;
-    }
-
-    @Override
+    /**
+    Pre: Asocacion a obtener la llave
+    @return La llave de la asociacion
+    */
     public K getKey(){
-    	/**
-    	Recuperar clave de asociación. No debe devolver nulo.
-        post devuelve la clave de la asociación
-        @return Clave del par clave-valor.
-        **/
-        return theKey;
+        return this.key;
     }
 
-    @Override
-    public V setValue(V value){
-    	/**
-    	Establece el valor del par clave-valor.
-        post establece el valor de la asociación en valor
-        @param value El nuevo valor.
-        **/
-        V oldValue = theValue;
-        theValue = value;
-        return oldValue;
+    /**
+    Pre: Asocacion a obtener el valor
+    @return El valor de la asociacion
+    */
+    public V getValue() {
+        return this.value;
     }
+
+    public void setKey(K key){
+        this.key = key;
+    }
+
+    public void setValue(V value){
+        this.value = value;
+    }
+
+    /**
+    @param that         Se recibe la asociacion a comparar
+    Pre: Tener una asociacion a comparar con otra asociacion
+    @return Un entero que representa la comparacion 
+    */
+    public int compareTo(Association<K,V> that){
+        return key.compareTo(that.key);
+    }
+
 }
